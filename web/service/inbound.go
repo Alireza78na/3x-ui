@@ -2,9 +2,7 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -413,11 +411,6 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 		return false, err
 	}
 
-	email := clients[0].Email
-	valid, err := validateEmail(email)
-	if !valid {
-		return false, err
-	}
 
 	var settings map[string]interface{}
 	err = json.Unmarshal([]byte(data.Settings), &settings)
@@ -606,12 +599,6 @@ func (s *InboundService) DelInboundClient(inboundId int, clientId string) (bool,
 func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId string) (bool, error) {
 	clients, err := s.GetClients(data)
 	if err != nil {
-		return false, err
-	}
-
-	email := clients[0].Email
-	valid, err := validateEmail(email)
-	if !valid {
 		return false, err
 	}
 
@@ -2020,17 +2007,4 @@ func (s *InboundService) MigrateDB() {
 
 func (s *InboundService) GetOnlineClients() []string {
 	return p.GetOnlineClients()
-}
-
-func validateEmail(email string) (bool, error) {
-	if strings.Contains(email, " ") {
-		return false, errors.New("email contains spaces, please remove them")
-	}
-
-	emailPattern := `^[a-zA-Z0-9@._-]+$`
-	if !regexp.MustCompile(emailPattern).MatchString(email) {
-		return false, errors.New("email contains invalid characters, please use only letters, digits, and @._-")
-	}
-
-	return true, nil
 }
